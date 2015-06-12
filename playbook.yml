@@ -1,0 +1,8 @@
+---
+
+- name: Configure a brand new Raspberry PI for SignalK
+  hosts: pi
+  roles:
+    - k-pi
+  remote_user: pi
+  sudo: yes
