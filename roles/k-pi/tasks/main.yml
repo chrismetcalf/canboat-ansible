@@ -1,9 +1,84 @@
 ---
-- name: Update APT cache
-  action: apt update_cache=yes
 
-- name: Upgrade system
-  action: apt upgrade=safe
+- name: fetch_nodejs
+  get_url:
+    url="http://node-arm.herokuapp.com/node_latest_armhf.deb"
+    dest="/tmp/node_latest_armhf.deb"
 
-- name: Reboot
-  command: /sbin/reboot -t now
+- name: install_nodejs
+  apt: deb="/tmp/node_latest_armhf.deb"
+
+- name: create_opt_dir
+  command: "mkdir -p /opt/signal-k"
+
+- name: chown_opt_dir
+  command: "chown pi:pi /opt/signal-k"
+
+- name: checkout_signalk
+  git: repo=https://github.com/SignalK/signalk-server-node.git
+       dest=/opt/signal-k/server
+  sudo: no
+
+- name: npm_install
+  npm: path=/opt/signal-k/server
+  sudo: no
+
+- name: install_libavahi
+  apt: name=libavahi-compat-libdnssd-dev
+
+- name: install_avahi_daemon
+  apt: name=avahi-daemon
+
+- name: npm_install_mdns
+  npm:
+    name=mdns
+    path=/opt/signal-k/server
+  sudo: no
+
+- name: npm_install_bower
+  npm:
+    name=bower
+    path=/opt/signal-k/server
+  sudo: no
+
+- name: bower_install_instrumentpanel
+  command: "./node_modules/.bin/bower install https://github.com/SignalK/instrumentpanel.git"
+  args:
+    chdir: /opt/signal-k/server
+  sudo: no
+
+- name: bower_install_sailgauge
+  command: "./node_modules/.bin/bower install https://github.com/SignalK/sailgauge.git"
+  args:
+    chdir: /opt/signal-k/server
+  sudo: no
+
+- name: npm_install_forever
+  npm:
+    name=forever
+    path=/opt/signal-k/server
+  sudo: no
+
+- name: npm_install_forever_monitor
+  npm:
+    name=forever-monitor
+    path=/opt/signal-k/server
+  sudo: no
+
+- name: copy_sysv_conf
+  copy:
+    src=signal-k-server
+    dest=/etc/init.d/signal-k-server
+    mode=755
+
+- name: install_monit
+  apt:
+    name=monit
+
+- name: copy_monit_config
+  copy:
+    src=monitrc
+    dest=/etc/monit/monitrc
+
+- name: configure_wifi
+  copy: src=wpa_supplicant.conf dest=/etc/wpa_supplicant/wpa_supplicant.conf mode=0600
