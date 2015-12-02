@@ -1,0 +1,26 @@
+{
+  "vessel": {
+    "name": "Gift Horse",
+    "uuid": "8e440fb6-6c01-4808-bb10-b58a4c368c1a"
+  },
+  "pipedProviders": [{
+    "id": "actisense",
+    "pipeElements": [{
+      "type": "providers/execute",
+      "options": {
+        "command": "actisense-serial /dev/ttyUSB0"
+      }
+    }, {
+      "type": "providers/liner"
+    }, {
+      "type": "providers/n2kAnalyzer"
+    }, {
+      "type": "providers/n2k-signalk"
+    }]
+  }],
+  "interfaces": {
+    "bower": true,
+    "rest": true,
+    "ws": true
+  }
+}
