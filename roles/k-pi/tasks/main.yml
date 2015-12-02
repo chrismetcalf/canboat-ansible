@@ -53,6 +53,23 @@
     chdir: /opt/signal-k/server
   sudo: no
 
+- name: checkout_canboat
+  git: repo=https://github.com/canboat/canboat.git
+       dest=/opt/signal-k/canboat
+  sudo: no
+
+- name: build_canboat
+  command: "make"
+  args:
+    chdir: /opt/signal-k/canboat
+  sudo: no
+
+- name: copy_signalk_conf
+  copy:
+    src=actisense-serial-settings.json
+    dest=/opt/signal-k/server/settings/actisense-serial-settings.json
+    mode=755
+
 - name: npm_install_forever
   npm:
     name=forever

@@ -18,10 +18,10 @@
 # Do NOT "set -e"
 
 # PATH should only include /usr/* if it runs after the mountnfs.sh script
-PATH=/sbin:/usr/sbin:/bin:/usr/bin:/usr/local/bin
+PATH=/sbin:/usr/sbin:/bin:/usr/bin:/usr/local/bin:/opt/signal-k/canboat/rel/linux-armv7l/
 DESC="Signal K Node.JS Server"
 NAME=signal-k-server
-DAEMON="/opt/signal-k/server/bin/nmea-from-file"
+DAEMON="/opt/signal-k/server/bin/n2k-from-actisense"
 DAEMON_ARGS=
 PIDFILE=/var/run/$NAME.pid
 SCRIPTNAME=/etc/init.d/$NAME
