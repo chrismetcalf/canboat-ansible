@@ -4,11 +4,17 @@
   hosts: pi
   roles:
     - role: ansible-raspi-config
+      raspi_config_update_packages: yes
       raspi_config_hostname: signal-k
       raspi_config_expanded_filesystem: yes
+      raspi_config_timezone: Pacific
+      raspi_config_ensure_optimal_cpu_params: no
+      locale: en_US.UTF8
       raspi_config_replace_user:
         name: pi
         path_to_ssh_key: ~/.ssh/id_rsa.pub
     - role: k-pi
+    - role: base
+    - role: wireless
   remote_user: pi
   sudo: yes

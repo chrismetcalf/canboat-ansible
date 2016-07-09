@@ -96,6 +96,3 @@
   copy:
     src=monitrc
     dest=/etc/monit/monitrc
-
-- name: configure_wifi
-  copy: src=wpa_supplicant.conf dest=/etc/wpa_supplicant/wpa_supplicant.conf mode=0600

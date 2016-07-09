@@ -1,0 +1,11 @@
+---
+- name: install_common_packages
+  apt: name={{item}} state=installed
+  with_items:
+    - vim
+    - zsh
+
+- name: copy_neuter_interfaces
+  copy:
+    src: interfaces
+    dest: /etc/network/interfaces

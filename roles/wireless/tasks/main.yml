@@ -1,0 +1,93 @@
+---
+- name: install_wireless_packages
+  apt: name={{item}} state=installed
+  with_items:
+    - hostapd
+    - dnsmasq
+    - linux-image-rpi
+
+- name: restart machine
+  shell: sleep 2 && shutdown -r now "Ansible updates triggered"
+  async: 1
+  poll: 0
+  sudo: true
+  ignore_errors: true
+
+- name: waiting for server to come back
+  local_action: wait_for port={{ ansible_ssh_port | default(22) }} host={{ ansible_hostname }} delay=30 timeout=300
+  sudo: false
+
+- name: update_dhcpcd_conf
+  blockinfile:
+    dest: /etc/dhcpcd.conf
+    block: |
+      denyinterfaces wlan0
+
+- name: setup_wlan0
+  blockinfile:
+    dest: /etc/network/interfaces
+    block: |
+      allow-hotplug wlan0
+      iface wlan0 inet static
+        address 172.24.1.1
+        netmask 255.255.255.0
+        network 172.24.1.0
+        broadcast 172.24.1.255
+
+- name: copy_hostapd_conf
+  copy:
+    src: hostapd.conf
+    dest: /etc/hostapd/hostapd.conf
+
+- name: enable_dhcpcd
+  blockinfile:
+    dest: /etc/default/hostapd
+    block: |
+      DAEMON_CONF="/etc/hostapd/hostapd.conf"
+
+- name: copy_dnsmasq_conf
+  copy:
+    src: dnsmasq.conf
+    dest: /etc/dnsmasq.conf
+
+- name: setup_ipv4_forwarding
+  blockinfile:
+    dest: /etc/sysctl.conf
+    block: |
+      net.ipv4.ip_forward=1
+
+- name: enable_forwarding
+  command: sh -c "echo 1 > /proc/sys/net/ipv4/ip_forward"
+
+- name: configure_nat
+  command: "{{item}}"
+  with_items:
+    - iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+    - iptables -A FORWARD -i eth0 -o wlan0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+    - iptables -A FORWARD -i wlan0 -o eth0 -j ACCEPT
+    - sh -c "iptables-save > /etc/iptables.ipv4.nat"
+
+- name: setup_ipv4_forwarding
+  blockinfile:
+    dest: /etc/rc.local
+    insertbefore: exit 0
+    block: |
+      iptables-restore < /etc/iptables.ipv4.nat
+
+- name: reload_wireless_interface
+  command: "{{ item }}"
+  with_items:
+    - ifdown wlan0
+    - ifup wlan0
+
+- name: restart_services
+  service:
+    name: "{{item}}"
+    state: started
+    enabled: yes
+    sleep: 3
+  with_items:
+    - dhcpcd
+    - hostapd
+    - dnsmasq
+
