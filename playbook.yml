@@ -13,9 +13,10 @@
       raspi_config_replace_user:
         name: pi
         path_to_ssh_key: ~/.ssh/id_rsa.pub
-    # - role: k-pi
     - role: base
     - role: tether
     - role: wireless
+    # - role: k-pi
+    - role: kplex
   remote_user: pi
   sudo: yes

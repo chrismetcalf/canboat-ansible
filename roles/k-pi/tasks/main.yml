@@ -1,98 +1,35 @@
 ---
 
-- name: fetch_nodejs
-  get_url:
-    url="http://node-arm.herokuapp.com/node_latest_armhf.deb"
-    dest="/tmp/node_latest_armhf.deb"
+- name: add_adafruit_key
+  apt_key:
+    url: https://apt.adafruit.com/apt.adafruit.com.gpg.key
+    state: present
 
-- name: install_nodejs
-  apt: deb="/tmp/node_latest_armhf.deb"
+- name: add_adafruit_repo
+  apt_repository:
+    state: present
+    repo: deb http://apt.adafruit.com/raspbian/ jessie main
 
-- name: create_opt_dir
-  command: "mkdir -p /opt/signal-k"
+- name: install_dependencies
+  apt: name={{item}} state=installed
+  with_items:
+    - git
+    - maven
+    - node
+    - oracle-java8-jdk
 
-- name: chown_opt_dir
-  command: "chown pi:pi /opt/signal-k"
+- name: select_jdk8
+  alternatives:
+    name: java
+    path: /usr/lib/jvm/jdk-8-oracle-arm32-vfp-hflt/jre/bin/java
 
 - name: checkout_signalk
-  git: repo=https://github.com/SignalK/signalk-server-node.git
-       dest=/opt/signal-k/server
-  sudo: no
+  git:
+    repo: https://github.com/SignalK/signalk-java.git
+    dest: /opt/signalk-java
 
-- name: npm_install
-  npm: path=/opt/signal-k/server
-  sudo: no
-
-- name: install_libavahi
-  apt: name=libavahi-compat-libdnssd-dev
-
-- name: install_avahi_daemon
-  apt: name=avahi-daemon
-
-- name: npm_install_mdns
-  npm:
-    name=mdns
-    path=/opt/signal-k/server
-  sudo: no
-
-- name: npm_install_bower
-  npm:
-    name=bower
-    path=/opt/signal-k/server
-  sudo: no
-
-- name: bower_install_instrumentpanel
-  command: "./node_modules/.bin/bower install https://github.com/SignalK/instrumentpanel.git"
-  args:
-    chdir: /opt/signal-k/server
-  sudo: no
-
-- name: bower_install_sailgauge
-  command: "./node_modules/.bin/bower install https://github.com/SignalK/sailgauge.git"
-  args:
-    chdir: /opt/signal-k/server
-  sudo: no
-
-- name: checkout_canboat
-  git: repo=https://github.com/canboat/canboat.git
-       dest=/opt/signal-k/canboat
-  sudo: no
-
-- name: build_canboat
-  command: "make"
-  args:
-    chdir: /opt/signal-k/canboat
-  sudo: no
-
-- name: copy_signalk_conf
+- name: copy_init_file
   copy:
-    src=actisense-serial-settings.json
-    dest=/opt/signal-k/server/settings/actisense-serial-settings.json
-    mode=755
-
-- name: npm_install_forever
-  npm:
-    name=forever
-    path=/opt/signal-k/server
-  sudo: no
-
-- name: npm_install_forever_monitor
-  npm:
-    name=forever-monitor
-    path=/opt/signal-k/server
-  sudo: no
-
-- name: copy_sysv_conf
-  copy:
-    src=signal-k-server
-    dest=/etc/init.d/signal-k-server
-    mode=755
-
-- name: install_monit
-  apt:
-    name=monit
-
-- name: copy_monit_config
-  copy:
-    src=monitrc
-    dest=/etc/monit/monitrc
+    src: signalk-java
+    dest: /etc/init.d/signalk-java
+    mode: 755
