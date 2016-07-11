@@ -1,0 +1,44 @@
+---
+- name: install_canboat_deps
+  apt: name={{item}} state=installed
+  with_items:
+    - dtach
+    - monit
+
+- name: check_out_canboat
+  git:
+    repo: https://github.com/canboat/canboat.git
+    dest: /opt/canboat
+
+- name: build_canboat
+  make:
+    chdir: /opt/canboat
+
+- name: copy_nmea_over_ip_bin
+  copy:
+    src: nmea-over-ip.bin
+    dest: /opt/canboat/nmea-over-ip
+    mode: 755
+
+- name: copy_nmea_over_ip_init
+  copy:
+    src: nmea-over-ip.init
+    dest: /etc/init.d/nmea-over-ip
+    mode: 755
+
+- name: enable_nmea_over_ip_init
+  service:
+    name: nmea-over-ip
+    enabled: yes
+    state: restarted
+
+- name: add_monit_config
+  copy:
+    src: nmea-over-ip.monit
+    dest: /etc/monit/conf.d/nmea-over-ip
+
+- name: enable_monit
+  service:
+    name: monit
+    enabled: yes
+    state: restarted

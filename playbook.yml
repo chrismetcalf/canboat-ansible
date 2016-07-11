@@ -16,7 +16,6 @@
     - role: base
     - role: tether
     - role: wireless
-    # - role: k-pi
-    - role: kplex
+    - role: canboat
   remote_user: pi
   sudo: yes

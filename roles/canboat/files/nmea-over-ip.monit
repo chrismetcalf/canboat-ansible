@@ -1,0 +1,8 @@
+check host nmea-over-ip with address 127.0.0.1
+    start program = "/etc/init.d/nmea-over-ip start"
+    stop program = "/etc/init.d/nmea-over-ip stop"
+    if failed
+      port 2599 and expect "^\$.*"
+      with timeout 3 seconds
+      then restart
+    if 10 restarts within 10 cycles then timeout

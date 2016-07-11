@@ -1,0 +1,3 @@
+#!/bin/sh
+
+/opt/canboat/rel/linux-armv7l/actisense-serial /dev/ttyUSB0 | /opt/canboat/rel/linux-armv7l/analyzer -json | /opt/canboat/rel/linux-armv7l/n2kd --rate-limit
