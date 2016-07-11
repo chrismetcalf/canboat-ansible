@@ -1,6 +1,6 @@
 ---
 
-- name: Configure a brand new Raspberry PI for SignalK
+- name: Configure a brand new Raspberry PI for Canboat
   hosts: pi
   roles:
     - role: ansible-raspi-config
